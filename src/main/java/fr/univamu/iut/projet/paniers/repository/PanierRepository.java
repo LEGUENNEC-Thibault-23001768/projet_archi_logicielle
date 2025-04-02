@@ -1,13 +1,18 @@
-package fr.univamu.iut.projet.repository;
+package fr.univamu.iut.projet.paniers.repository;
 
-import fr.univamu.iut.projet.entity.Panier;
-import fr.univamu.iut.projet.entity.PanierProduit;
+import fr.univamu.iut.projet.paniers.entity.Panier;
+import fr.univamu.iut.projet.paniers.entity.PanierProduit;
 import jakarta.inject.Singleton;
 import java.io.Closeable;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Repository pour l'entité Panier.
+ * Gère l'accès à la base de données pour les opérations CRUD sur les paniers
+ * et leurs produits associés.
+ */
 @Singleton
 public class PanierRepository implements Closeable {
 
@@ -25,6 +30,9 @@ public class PanierRepository implements Closeable {
         }
     }
 
+    /**
+     * Ferme la connexion à la base de données lorsque le repository est fermé.
+     */
     @Override
     public void close() {
         try {
@@ -36,12 +44,24 @@ public class PanierRepository implements Closeable {
         }
     }
 
+    /**
+     * Mappe un ResultSet en un objet Panier.
+     * @param rs Le ResultSet courant.
+     * @return Un objet Panier créé à partir des données du ResultSet.
+     * @throws SQLException Si une erreur SQL se produit.
+     */
     private Panier mapResultSetToPanier(ResultSet rs) throws SQLException {
         Integer panierId = rs.getInt("panier_id");
         Timestamp lastUpdateDate = rs.getTimestamp("date_maj");
         return new Panier(panierId, lastUpdateDate);
     }
 
+    /**
+     * Mappe un ResultSet en un objet PanierProduit.
+     * @param rs Le ResultSet courant.
+     * @return Un objet PanierProduit créé à partir des données du ResultSet.
+     * @throws SQLException Si une erreur SQL se produit.
+     */
     private PanierProduit mapResultSetToPanierProduit(ResultSet rs) throws SQLException {
         return new PanierProduit(
                 rs.getInt("panier_produit_id"),
@@ -52,7 +72,11 @@ public class PanierRepository implements Closeable {
         );
     }
 
-
+    /**
+     * Recherche un panier par son ID.
+     * @param id L'ID du panier à rechercher.
+     * @return Le Panier trouvé ou null si aucun panier n'est trouvé.
+     */
     public Panier findById(Integer id) {
         String query = "SELECT * FROM paniers WHERE panier_id=?";
         Panier panier = null;
@@ -61,7 +85,7 @@ public class PanierRepository implements Closeable {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 panier = mapResultSetToPanier(rs);
-                panier.setPanierProduits(findPanierProduitsByPanierId(id)); // Load associated products
+                panier.setPanierProduits(findPanierProduitsByPanierId(id));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error finding Panier by id: " + id, e);
@@ -69,6 +93,10 @@ public class PanierRepository implements Closeable {
         return panier;
     }
 
+    /**
+     * Recherche tous les paniers.
+     * @return Une liste de tous les paniers.
+     */
     public List<Panier> findAll() {
         String query = "SELECT * FROM paniers";
         List<Panier> paniers = new ArrayList<>();
@@ -76,7 +104,7 @@ public class PanierRepository implements Closeable {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Panier panier = mapResultSetToPanier(rs);
-                panier.setPanierProduits(findPanierProduitsByPanierId(panier.getPanierId())); // Load associated products
+                panier.setPanierProduits(findPanierProduitsByPanierId(panier.getPanierId()));
                 paniers.add(panier);
             }
         } catch (SQLException e) {
@@ -85,6 +113,11 @@ public class PanierRepository implements Closeable {
         return paniers;
     }
 
+    /**
+     * Recherche les produits d'un panier par l'ID du panier.
+     * @param panierId L'ID du panier.
+     * @return Une liste des PanierProduit associés au panier.
+     */
     private List<PanierProduit> findPanierProduitsByPanierId(Integer panierId) {
         String query = "SELECT * FROM panier_produits WHERE panier_id=?";
         List<PanierProduit> panierProduits = new ArrayList<>();
@@ -101,6 +134,13 @@ public class PanierRepository implements Closeable {
     }
 
 
+    /**
+     * Sauvegarde ou met à jour un panier dans la base de données.
+     * Si l'ID du panier est null, un nouveau panier est inséré.
+     * Sinon, le panier existant est mis à jour.
+     * @param panier Le panier à sauvegarder.
+     * @return Le Panier sauvegardé avec son ID mis à jour (si insertion).
+     */
     public Panier save(Panier panier) {
         if (panier.getPanierId() == null) {
             return insert(panier);
@@ -109,8 +149,13 @@ public class PanierRepository implements Closeable {
         }
     }
 
+    /**
+     * Insère un nouveau panier dans la base de données.
+     * @param panier Le panier à insérer.
+     * @return Le Panier inséré avec son ID généré.
+     */
     private Panier insert(Panier panier) {
-        String query = "INSERT INTO paniers (date_maj) VALUES (NOW())"; // Use NOW() for current timestamp
+        String query = "INSERT INTO paniers (date_maj) VALUES (NOW())";
         try (PreparedStatement ps = dbConnection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             int affectedRows = ps.executeUpdate();
             if (affectedRows == 0) {
@@ -120,8 +165,8 @@ public class PanierRepository implements Closeable {
                 if (generatedKeys.next()) {
                     Integer generatedId = generatedKeys.getInt(1);
                     panier.setPanierId(generatedId);
-                    updatePanierProducts(panier); // Insert/Update PanierProduits
-                    return findById(generatedId); // Retrieve the complete panier with products
+                    updatePanierProducts(panier);
+                    return findById(generatedId);
                 } else {
                     throw new SQLException("Creating panier failed, no ID obtained.");
                 }
@@ -131,22 +176,30 @@ public class PanierRepository implements Closeable {
         }
     }
 
-
+    /**
+     * Met à jour un panier existant dans la base de données.
+     * @param panier Le panier à mettre à jour.
+     * @return Le Panier mis à jour.
+     */
     private Panier update(Panier panier) {
         String query = "UPDATE paniers SET date_maj = NOW() WHERE panier_id = ?";
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
             ps.setInt(1, panier.getPanierId());
             ps.executeUpdate();
-            updatePanierProducts(panier); // Update PanierProduits
-            return findById(panier.getPanierId()); // Retrieve the complete panier with updated products
+            updatePanierProducts(panier);
+            return findById(panier.getPanierId());
         } catch (SQLException e) {
             throw new RuntimeException("Error updating Panier", e);
         }
     }
 
+    /**
+     * Met à jour les produits associés à un panier.
+     * Supprime les produits existants pour ce panier et réinsère les nouveaux produits.
+     * @param panier Le panier dont les produits doivent être mis à jour.
+     */
     private void updatePanierProducts(Panier panier) {
         if (panier.getPanierProduits() != null) {
-            // Delete existing panier products for this panier and re-insert
             deletePanierProductsForPanierId(panier.getPanierId());
             for (PanierProduit product : panier.getPanierProduits()) {
                 insertPanierProduct(panier.getPanierId(), product);
@@ -154,6 +207,11 @@ public class PanierRepository implements Closeable {
         }
     }
 
+    /**
+     * Insère un produit de panier dans la base de données.
+     * @param panierId L'ID du panier associé.
+     * @param product Le PanierProduit à insérer.
+     */
     private void insertPanierProduct(Integer panierId, PanierProduit product) {
         String query = "INSERT INTO panier_produits (panier_id, product_id, quantity, unit) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
@@ -167,6 +225,10 @@ public class PanierRepository implements Closeable {
         }
     }
 
+    /**
+     * Supprime tous les produits de panier associés à un panier spécifique.
+     * @param panierId L'ID du panier.
+     */
     private void deletePanierProductsForPanierId(Integer panierId) {
         String query = "DELETE FROM panier_produits WHERE panier_id = ?";
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
@@ -178,6 +240,10 @@ public class PanierRepository implements Closeable {
     }
 
 
+    /**
+     * Supprime un panier par son ID.
+     * @param id L'ID du panier à supprimer.
+     */
     public void delete(Integer id) {
         String query = "DELETE FROM paniers WHERE panier_id=?";
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
