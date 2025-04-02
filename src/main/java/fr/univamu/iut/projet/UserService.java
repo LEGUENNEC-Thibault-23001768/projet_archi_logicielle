@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @ApplicationScoped
 public class UserService {
@@ -110,5 +111,25 @@ public class UserService {
      */
     public boolean createUser(User user) {
         return userRepo.createUser(user);
+    }
+
+    /**
+     * Attempts to authenticate a user based on email and plain text password.
+     * **WARNING: Compares plain text passwords - INSECURE.**
+     * @param email The user's email.
+     * @param plainPassword The user's plain text password.
+     * @return The authenticated User object if successful (with password cleared), null otherwise.
+     */
+    public User authenticateUser(String email, String plainPassword) {
+        User user = userRepo.getUserByEmail(email);
+
+        if (user != null && user.getPassword() != null && plainPassword != null) {
+
+            if (Objects.equals(plainPassword, user.getPassword())) {
+                user.setPassword(null);
+                return user;
+            }
+        }
+        return null;
     }
 }

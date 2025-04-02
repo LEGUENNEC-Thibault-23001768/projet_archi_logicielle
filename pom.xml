@@ -71,6 +71,7 @@
             <artifactId>mariadb-java-client</artifactId>
             <version>LATEST</version>
         </dependency>
+
     </dependencies>
 
     <build>
