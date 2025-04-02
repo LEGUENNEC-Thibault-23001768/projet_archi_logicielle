@@ -146,17 +146,15 @@ public class UserRepositoryMariadb implements UserRepositoryInterface, Closeable
     public boolean createUser(User user) {
         String query = "INSERT INTO users (id, nom, password, email, role) VALUES (?, ?, ?, ?, ?)";
         int nbRowModified = 0;
-
-        // construction et exécution d'une requête préparée
+        String defaultRole = "client";
         try ( PreparedStatement ps = dbConnection.prepareStatement(query) ){
             ps.setString(1, user.getId());
             ps.setString(2, user.getNom());
             ps.setString(3, user.getPassword());
             ps.setString(4, user.getEmail());
-            ps.setString(5, user.getRole());
+            ps.setString(5, defaultRole);
 
 
-            // exécution de la requête
             nbRowModified = ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
