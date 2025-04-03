@@ -2,11 +2,18 @@ package fr.univamu.iut.projet.paniers.controller;
 
 import fr.univamu.iut.projet.paniers.entity.Panier;
 import fr.univamu.iut.projet.paniers.service.PanierService;
+import fr.univamu.iut.projet.paniers.util.JWTUtil;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.enterprise.inject.Default;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Contrôleur REST pour la gestion des paniers.
@@ -19,6 +26,35 @@ public class PanierController {
 
     @Inject
     private PanierService panierService;
+    @Inject private JWTUtil jwtUtil;
+
+
+    private Optional<String> validateAuthHeaderAndGetUserId(HttpHeaders httpHeaders) {
+        List<String> authHeaders = httpHeaders.getRequestHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeaders == null || authHeaders.isEmpty()) {
+            System.err.println("Auth Error: Missing Authorization header");
+            return Optional.empty();
+        }
+
+        String bearerToken = authHeaders.get(0);
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            System.err.println("Auth Error: Invalid Authorization header format");
+            return Optional.empty();
+        }
+
+        String token = bearerToken.substring(7); // Enlever "Bearer "
+        return jwtUtil.getUserIdFromToken(token);
+    }
+
+    private boolean checkUserRole(HttpHeaders httpHeaders, String requiredRole) {
+        List<String> authHeaders = httpHeaders.getRequestHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeaders == null || authHeaders.isEmpty() || !authHeaders.get(0).startsWith("Bearer ")) {
+            return false;
+        }
+        String token = authHeaders.get(0).substring(7);
+        Optional<List<String>> rolesOpt = jwtUtil.getRolesFromToken(token);
+        return rolesOpt.map(roles -> roles.contains(requiredRole)).orElse(false);
+    }
 
 
     /**
@@ -26,62 +62,72 @@ public class PanierController {
      * @return Response contenant une liste de tous les paniers.
      */
     @GET
+    @RolesAllowed({"admin"})
     public Response getAllPaniers() {
         List<Panier> paniers = panierService.getAllPaniers();
         return Response.ok(paniers).build();
     }
 
     /**
-     * Récupère un panier par son ID.
-     * @param id L'ID du panier à récupérer.
-     * @return Response contenant le panier trouvé ou une erreur 404 si non trouvé.
+     * Récupère le panier de l'utilisateur actuellement connecté.
+     * Crée un panier s'il n'en existe pas.
+     * Nécessite que l'utilisateur soit authentifié.
+     * @return Response contenant le panier de l'utilisateur.
      */
     @GET
-    @Path("/{id}")
-    public Response getPanierById(@PathParam("id") Integer id) {
-        Panier panier = panierService.getPanierById(id);
+    @Path("/mine")
+    public Response getMyPanier(@Context HttpHeaders httpHeaders) {
+        Optional<String> userIdOpt = validateAuthHeaderAndGetUserId(httpHeaders);
+        if (userIdOpt.isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Authentification requise ou token invalide.").build();
+        }
+        String userId = userIdOpt.get();
+
+        Panier panier = panierService.getOrCreatePanierByUserId(userId);
+        return Response.ok(panier).build();
+    }
+
+    /**
+     * Vide le panier de l'utilisateur connecté (supprime tous les produits).
+     * Ne supprime pas l'entité Panier elle-même.
+     * Nécessite que l'utilisateur soit authentifié.
+     * @return Response avec le panier vidé.
+     */
+    @DELETE
+    @Path("/mine/items")
+    public Response clearMyPanierItems(@Context HttpHeaders httpHeaders) {
+        Optional<String> userIdOpt = validateAuthHeaderAndGetUserId(httpHeaders);
+        if (userIdOpt.isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Authentification requise ou token invalide.").build();
+        }
+        String userId = userIdOpt.get();
+        Panier panier = panierService.clearPanierItemsForUser(userId);
         if (panier == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Panier non trouvé.").build();
         }
         return Response.ok(panier).build();
     }
 
     /**
-     * Crée un nouveau panier.
-     * @param panier Le panier à créer.
-     * @return Response contenant le panier créé et un statut 201 CREATED.
-     */
-    @POST
-    public Response createPanier(Panier panier) {
-        Panier createdPanier = panierService.createPanier(panier);
-        return Response.status(Response.Status.CREATED).entity(createdPanier).build();
-    }
-
-    /**
-     * Met à jour un panier existant.
-     * @param id L'ID du panier à mettre à jour.
+     * Met à jour le panier de l'utilisateur connecté.
+     * Remplace complètement les produits du panier par ceux fournis.
+     * Nécessite que l'utilisateur soit authentifié.
      * @param panierDetails Les détails du panier mis à jour.
-     * @return Response contenant le panier mis à jour ou une erreur 404 si non trouvé.
+     * @return Response contenant le panier mis à jour.
      */
     @PUT
-    @Path("/{id}")
-    public Response updatePanier(@PathParam("id") Integer id, Panier panierDetails) {
-        Panier updatedPanier = panierService.updatePanier(id, panierDetails);
-        if (updatedPanier == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+    @Path("/mine")
+    public Response updateMyPanier(@Context HttpHeaders httpHeaders, Panier panierDetails) {
+        Optional<String> userIdOpt = validateAuthHeaderAndGetUserId(httpHeaders);
+        if (userIdOpt.isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Authentification requise ou token invalide.").build();
         }
-        return Response.ok(updatedPanier).build();
-    }
+        String userId = userIdOpt.get();
 
-    /**
-     * Supprime un panier par son ID.
-     * @param id L'ID du panier à supprimer.
-     * @return Response avec un statut 204 NO_CONTENT en cas de succès.
-     */
-    @DELETE
-    @Path("/{id}")
-    public Response deletePanier(@PathParam("id") Integer id) {
-        panierService.deletePanier(id);
-        return Response.noContent().build();
+        Panier panier = panierService.updatePanierForUser(userId, panierDetails);
+        if (panier == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erreur lors du vidage du panier.").build();
+        }
+        return Response.ok(panier).build();
     }
 }

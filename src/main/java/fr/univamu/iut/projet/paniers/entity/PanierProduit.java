@@ -7,10 +7,9 @@ package fr.univamu.iut.projet.paniers.entity;
  */
 public class PanierProduit {
 
-    private Integer panierProduitId;
     private Integer panierId;
     private String productId;
-    private int quantity;
+    private Double quantity;
     private String unit;
 
     /**
@@ -21,34 +20,16 @@ public class PanierProduit {
 
     /**
      * Constructeur de PanierProduit avec tous les attributs.
-     * @param panierProduitId L'identifiant unique de la relation panier-produit.
      * @param panierId L'identifiant du panier associé.
      * @param productId L'identifiant du produit.
      * @param quantity La quantité du produit dans le panier.
      * @param unit L'unité de mesure de la quantité.
      */
-    public PanierProduit(Integer panierProduitId, Integer panierId, String productId, int quantity, String unit) {
-        this.panierProduitId = panierProduitId;
+    public PanierProduit(Integer panierId, String productId, Double quantity, String unit) {
         this.panierId = panierId;
         this.productId = productId;
         this.quantity = quantity;
         this.unit = unit;
-    }
-
-    /**
-     * Obtient l'identifiant unique de la relation panier-produit.
-     * @return L'identifiant de PanierProduit.
-     */
-    public Integer getPanierProduitId() {
-        return panierProduitId;
-    }
-
-    /**
-     * Définit l'identifiant unique de la relation panier-produit.
-     * @param panierProduitId L'identifiant de PanierProduit.
-     */
-    public void setPanierProduitId(Integer panierProduitId) {
-        this.panierProduitId = panierProduitId;
     }
 
     /**
@@ -87,7 +68,7 @@ public class PanierProduit {
      * Obtient la quantité du produit dans le panier.
      * @return La quantité du produit.
      */
-    public int getQuantity() {
+    public Double getQuantity() {
         return quantity;
     }
 
@@ -95,7 +76,7 @@ public class PanierProduit {
      * Définit la quantité du produit dans le panier.
      * @param quantity La quantité du produit.
      */
-    public void setQuantity(int quantity) {
+    public void setQuantity(Double quantity) {
         this.quantity = quantity;
     }
 
@@ -118,7 +99,6 @@ public class PanierProduit {
     @Override
     public String toString() {
         return "PanierProduit{" +
-                "panierProduitId=" + panierProduitId +
                 ", panierId=" + panierId +
                 ", productId='" + productId + '\'' +
                 ", quantity=" + quantity +

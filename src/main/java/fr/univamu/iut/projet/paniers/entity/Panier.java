@@ -1,6 +1,7 @@
 package fr.univamu.iut.projet.paniers.entity;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,6 +12,7 @@ import java.util.List;
 public class Panier {
 
     private Integer panierId;
+    private String userId;
     private Timestamp lastUpdateDate;
     private List<PanierProduit> panierProduits;
 
@@ -22,9 +24,11 @@ public class Panier {
      * @param panierId L'identifiant unique du panier.
      * @param lastUpdateDate La date de dernière mise à jour du panier.
      */
-    public Panier(Integer panierId, Timestamp lastUpdateDate) {
+    public Panier(Integer panierId, String userId, Timestamp lastUpdateDate) {
         this.panierId = panierId;
+        this.userId = userId;
         this.lastUpdateDate = lastUpdateDate;
+        this.panierProduits = new ArrayList<>();
     }
 
     /**
@@ -33,6 +37,22 @@ public class Panier {
      */
     public Integer getPanierId() {
         return panierId;
+    }
+
+    /**
+     * Obtient l'identifiant au quel appartient le panier
+     * @return L'identifiant de l'utilisateur
+     */
+    public String getUserId() {
+        return userId;
+    }
+
+    /**
+     * Définit l'identifiant au quel appartient ce panier
+     * @param userId L'identifier de l'utilisateur
+     */
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     /**
@@ -79,6 +99,7 @@ public class Panier {
     public String toString() {
         return "Panier{" +
                 "panierId=" + panierId +
+                ", userId='" + userId + '\'' +
                 ", lastUpdateDate=" + lastUpdateDate +
                 ", panierProduits=" + panierProduits +
                 '}';
