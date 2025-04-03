@@ -31,15 +31,15 @@ if (!$userId || !$token) {
         <p style="text-align:center;"><a href="/login.php?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="browse-btn">Se connecter</a></p>
 
     <?php elseif ($mode === 'finaliser'): ?>
-        <div id="commande-loading" style="text-align: center; padding: 30px;">Chargement du récapitulatif de votre panier actuel...</div>
+        <div id="commande-loading" style="text-align: center; padding: 30px;">Chargement du récapitulatif de votre commande actuelle...</div>
         <div id="commande-error" class="alert error" style="display: none;"></div>
         <div id="commande-panier-vide" class="alert info" style="display: none; text-align: center;">Votre panier est vide. <a href="/index.php" class="browse-btn">Ajouter des produits</a></div>
 
         <div id="commande-content" style="display: none;" class="commande-grid">
             <section class="commande-recap">
-                <h2>Récapitulatif du Panier</h2>
+                <h2>Récapitulatif de votre commande</h2>
                 <img id="panier-image" src="/images/placeholder.jpg" alt="Image Panier" style="max-width:100%; height:auto; margin-bottom: 15px;">
-                <p id="panier-description">Votre sélection de produits frais.</p>
+                <p id="panier-description">Votre sélection de paniers.</p>
                 <ul id="panier-produits-recap"></ul>
                 <p><strong>Total du panier : <span id="panier-total-recap">0.00 €</span></strong></p>
             </section>
@@ -172,12 +172,12 @@ document.addEventListener('DOMContentLoaded', () => {
                  await Promise.all(detailPromises);
 
                  recapList.innerHTML = ''; calculatedTotal = 0;
-                 fetchedPanierData.panierProduits.forEach(item => {
+                fetchedPanierData.panierProduits.forEach(item => {
                     const details = productDetailsCmdCache[item.productId]; if (!details) return;
                     const li = document.createElement('li'); const lineTotal = (details.prix || 0) * item.quantity;
-                    li.textContent = `${details.nom} - ${item.quantity} ${item.unit} (${lineTotal.toFixed(2)} €)`;
+                    li.textContent = `Panier ${details.nom} - ${item.quantity} ${item.unit} (${lineTotal.toFixed(2)} €)`;
                     recapList.appendChild(li); calculatedTotal += lineTotal;
-                 });
+                });
                  panierTotalRecap.textContent = `${calculatedTotal.toFixed(2)} €`; formTotalPrice.textContent = `${calculatedTotal.toFixed(2)} €`;
                  panierImage.src = '/images/commande_recap.jpg'; panierImage.alt = 'Récapitulatif de votre commande';
 
