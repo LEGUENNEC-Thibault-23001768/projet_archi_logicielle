@@ -45,7 +45,7 @@ if (is_array($allProduits)) {
                          <?php foreach ($produits as $produit): ?>
                              <div class="product-card">
                                  <img src="/images/<?= htmlspecialchars($produit['image'] ?? 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($produit['nom']) ?>" onerror="this.onerror=null;this.src='/images/placeholder.jpg';">
-                                 <h3><?= htmlspecialchars($produit['nom']) ?></h3>
+                                 <h3>Panier <?= htmlspecialchars($produit['nom']) ?></h3>
                                  <p class="price"><?= number_format($produit['prix'] ?? 0, 2, ',', ' ') ?> € / <?= htmlspecialchars($produit['unite'] ?? 'unité') ?></p>
                                  <p class="stock">Stock: <?= htmlspecialchars($produit['stock'] ?? 'N/A') ?></p>
                                  <form class="add-to-cart-form" method="POST" data-product-id="<?= htmlspecialchars($produit['id']) ?>" data-product-unit="<?= htmlspecialchars($produit['unite'] ?? 'unité') ?>">
