@@ -1,5 +1,6 @@
 package fr.univamu.iut.projet;
 
+import com.nimbusds.jose.JOSEException;
 import fr.univamu.iut.projet.LoginCredentials;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -10,6 +11,11 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Path("/auth")
 @ApplicationScoped
 public class AuthResource {
@@ -17,26 +23,47 @@ public class AuthResource {
     @Inject
     UserService userService; // Inject the UserService
 
+    @Inject
+    JwtUtil jwtUtil;
+
     @POST
     @Path("/login")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(LoginCredentials credentials) {
         if (credentials == null || credentials.getEmail() == null || credentials.getPassword() == null) {
-            // Consider if an empty password should be allowed for login based on your requirements
             return Response.status(Response.Status.BAD_REQUEST).entity("Email and password are required.").build();
         }
 
-        // Call the modified authenticateUser which uses plain text comparison
         User authenticatedUser = userService.authenticateUser(credentials.getEmail(), credentials.getPassword());
 
         if (authenticatedUser != null) {
-            // Authentication successful
-            // The password field is already cleared in the service method before returning
-            return Response.ok(authenticatedUser).build();
+            try {
+                List<String> roles = userService.getUserRoles(authenticatedUser.getId());
+                if (roles == null) {
+                    roles = Collections.singletonList("user");
+                }
+
+
+                String token = jwtUtil.generateToken(authenticatedUser, roles);
+
+                Map<String, Object> responseData = new HashMap<>();
+                responseData.put("token", token);
+                authenticatedUser.setPassword(null);
+                responseData.put("user", authenticatedUser);
+
+                return Response.ok(responseData).build();
+
+            } catch (JOSEException e) {
+                System.err.println("Erreur JWT generation: " + e.getMessage());
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erreur interne lors de la connexion.").build();
+            } catch (Exception e) {
+                System.err.println("Erreur login: " + e.getMessage());
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erreur interne.").build();
+            }
         } else {
-            // Authentication failed
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid email or password.").build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Email ou mot de passe invalide.").build();
         }
+
     }
 }
