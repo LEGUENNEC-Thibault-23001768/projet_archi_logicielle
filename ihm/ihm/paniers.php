@@ -13,7 +13,7 @@ if (!$token || !$userId) {
 ?>
 
 <main class="panier-page">
-    <h1>Votre Panier</h1>
+    <h1>Votre sélection de paniers</h1>
 
     <?php if ($error): ?>
         <div class="alert error"><?= htmlspecialchars($error) ?></div>
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             itemElement.querySelector('.item-image').src = `/images/${details.image || 'placeholder.jpg'}`;
             itemElement.querySelector('.item-image').alt = details.nom || 'Produit';
-            itemElement.querySelector('.item-name').textContent = details.nom || 'Produit inconnu';
+            itemElement.querySelector('.item-name').textContent = `Panier ${details.nom || 'Produit inconnu'}`;
             itemElement.querySelector('.unit-price').textContent = `${(details.prix || 0).toFixed(2)} € / ${item.unit}`;
 
             const quantityInput = itemElement.querySelector('input[name="quantite"]');
