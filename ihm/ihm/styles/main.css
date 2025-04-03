@@ -259,11 +259,11 @@
     .hero {
         height: 300px;
     }
-    
+
     .hero h1 {
         font-size: 2em;
     }
-    
+
     .baskets-grid {
         grid-template-columns: 1fr;
     }
@@ -405,7 +405,7 @@
     gap: 40px;
 }
 
-.panier-summary h2, 
+.panier-summary h2,
 .commande-form h2 {
     color: #2d5a3f;
     margin-bottom: 20px;
@@ -677,17 +677,120 @@
     text-decoration: underline;
 }
 
+
+.commande-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.commande-recap {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.commande-recap h2 {
+    color: #2d5a3f;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e67e22;
+}
+
+.commande-recap ul {
+    padding-left: 20px;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+.commande-recap p {
+    color: #2d5a3f;
+    font-weight: 600;
+}
+
+.commande-form-section {
+    background: #f9f9f9;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.commande-form-section h2 {
+    color: #2d5a3f;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e67e22;
+}
+
+.commande-summary-final {
+    background: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 25px 0;
+    text-align: right;
+    border: 1px dashed #e67e22;
+    font-weight: bold;
+    color: #e67e22;
+}
+
+.historique-commandes-list {
+    margin-top: 40px;
+}
+
+.historique-commandes-list .commande-item-template {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.historique-commandes-list .commande-item-template h3 {
+    color: #2d5a3f;
+    margin-bottom: 10px;
+}
+
+.historique-commandes-list .commande-item-template p {
+    color: #444;
+    margin: 5px 0;
+}
+
+.cancel-commande-btn {
+    background-color: #e74c3c;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.cancel-commande-btn:hover {
+    background-color: #c0392b;
+}
+
+@media (max-width: 768px) {
+    .commande-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 /* Responsive */
 @media (max-width: 768px) {
     .panier-content {
         grid-template-columns: 1fr;
     }
-    
+
     .panier-image {
         max-width: 500px;
         margin: 0 auto;
     }
-    
+
     .meta-info {
         flex-direction: column;
         gap: 10px;
@@ -698,7 +801,7 @@
     .panier-header h1 {
         font-size: 1.5em;
     }
-    
+
     .panier-details h2 {
         font-size: 1.2em;
     }
@@ -710,11 +813,11 @@
     .commande-container {
         grid-template-columns: 1fr;
     }
-    
+
     .panier-card {
         flex-direction: row;
     }
-    
+
     .panier-card img {
         width: 150px;
         height: auto;
@@ -725,7 +828,7 @@
     .panier-card {
         flex-direction: column;
     }
-    
+
     .panier-card img {
         width: 100%;
         height: 150px;
@@ -1022,11 +1125,11 @@
         grid-template-columns: 80px 1fr;
         grid-template-rows: auto auto auto;
     }
-    
+
     .item-quantity, .item-total, .remove-form {
         grid-column: 2;
     }
-    
+
     .remove-form {
         text-align: right;
     }
