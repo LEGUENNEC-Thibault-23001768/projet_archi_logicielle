@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @ApplicationScoped
@@ -130,6 +131,10 @@ public class UserService {
                 return user;
             }
         }
+        return null;
+    }
+
+    public List<String> getUserRoles(String id) {
         return null;
     }
 }
