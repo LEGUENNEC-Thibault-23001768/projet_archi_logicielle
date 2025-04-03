@@ -67,6 +67,39 @@ public class CommandeRepository implements Closeable {
         );
     }
 
+
+    public List<Commande> findByClientId(Integer clientId) {
+        List<Commande> commandes = new ArrayList<>();
+        String query = "SELECT * FROM commande WHERE client_id = ? ORDER BY id DESC LIMIT 10";
+        try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
+            ps.setInt(1, clientId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                commandes.add(mapResultSetToCommande(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur SQL lors de findByClientId(" + clientId + "): " + e.getMessage());
+            throw new RuntimeException("Erreur lors de la récupération des commandes pour le client ID: " + clientId, e);
+        }
+        return commandes;
+    }
+
+    public Commande findByIdAndClientId(Integer id, String clientId) {
+        String query = "SELECT * FROM commande WHERE id = ? AND client_id = ? LIMIT 10";
+        try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
+            ps.setInt(1, id);
+            ps.setString(2, clientId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToCommande(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur SQL lors de findByIdAndClientId(id=" + id + ", clientId=" + clientId + "): " + e.getMessage());
+            throw new RuntimeException("Erreur lors de la recherche de la commande ID: " + id + " pour le client ID: " + clientId, e);
+        }
+        return null;
+    }
+
     public Commande findById(Integer id) {
         String query = "SELECT * FROM commande WHERE id=?";
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {

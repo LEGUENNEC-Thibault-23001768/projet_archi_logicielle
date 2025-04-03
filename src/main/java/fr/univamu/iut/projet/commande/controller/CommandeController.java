@@ -24,13 +24,21 @@ public class CommandeController {
     private CommandeService commandeService;
 
     /**
-     * Endpoint pour récupérer toutes les commandes.
-     * GET /api/commandes
-     * @return Réponse HTTP avec la liste des commandes ou une erreur.
+     * Récupère les commandes pour un client spécifique OU toutes les commandes (si aucun clientId n'est fourni)
+     * GET /api/commandes?clientId={clientId}
+     * @param clientId (Optionnel) ID du client dont on veut les commandes.
+     * @return Réponse HTTP avec la liste des commandes filtrées ou toutes les commandes.
      */
     @GET
-    public Response getAllCommandes() {
-        List<Commande> commandes = commandeService.getAllCommandes();
+    public Response getClientCommandes(@QueryParam("clientId") Integer clientId) {
+        List<Commande> commandes;
+        if (clientId != null ) {
+            System.out.println("Récupération des commandes pour clientId: " + clientId);
+            commandes = commandeService.getCommandesByClientId(clientId);
+        } else {
+            System.out.println("Récupération de TOUTES les commandes (aucun clientId fourni).");
+            commandes = commandeService.getAllCommandes();
+        }
         return Response.ok(commandes).build();
     }
 

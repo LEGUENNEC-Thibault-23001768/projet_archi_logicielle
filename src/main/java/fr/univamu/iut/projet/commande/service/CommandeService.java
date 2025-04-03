@@ -5,6 +5,7 @@ import fr.univamu.iut.projet.commande.repository.CommandeRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -96,4 +97,17 @@ public class CommandeService {
         }
         return null;
     }
+
+    /**
+     * Récupère toutes les commandes pour un client spécifique.
+     * @param clientId L'ID du client.
+     * @return La liste des commandes du client (peut être vide).
+     */
+    public List<Commande> getCommandesByClientId(Integer clientId) {
+        if (clientId == null) {
+            return Collections.emptyList();
+        }
+        return commandeRepository.findByClientId(clientId);
+    }
+
 }
