@@ -1,4 +1,4 @@
-package fr.univamu.iut.projet.filter; // Choisis un package approprié
+package fr.univamu.iut.projet.filter;
 
 import jakarta.ws.rs.container.*;
 import jakarta.ws.rs.core.Response;
@@ -14,7 +14,7 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
     public void filter(ContainerRequestContext requestContext) throws IOException {
         if (requestContext.getRequest().getMethod().equals("OPTIONS")) {
             Response.ResponseBuilder builder = Response.ok()
-                    .header("Access-Control-Allow-Origin", "*") // ATTENTION: Utilise une origine spécifique en production
+                    .header("Access-Control-Allow-Origin", "*")
                     .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
                     .header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, X-Requested-With");
 
@@ -24,7 +24,7 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        responseContext.getHeaders().add("Access-Control-Allow-Origin", "*"); // ATTENTION: Doit correspondre à celui de la requête OPTIONS ou être plus spécifique
+        responseContext.getHeaders().add("Access-Control-Allow-Origin", "*");
 
     }
 }
