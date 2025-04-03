@@ -19,7 +19,7 @@
 
         <nav class="main-nav">
             <a href="/index.php" class="nav-link">Accueil</a>
-            <a href="/paniers.php" class="nav-link">Mon Panier</a>
+            <a href="/paniers.php" class="nav-link">Nos Paniers</a>
             <?php if ($isLoggedIn): ?>
                  <a href="/commandes.php" class="nav-link">Mes Commandes</a>
                  <a href="/espace-client.php" class="nav-link">Mon Compte</a>
