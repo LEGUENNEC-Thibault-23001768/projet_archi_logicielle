@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"fr.univamu.iut.projet.commande"},{"l":"fr.univamu.iut.projet.commande.controller"},{"l":"fr.univamu.iut.projet.commande.entity"},{"l":"fr.univamu.iut.projet.commande.repository"},{"l":"fr.univamu.iut.projet.commande.service"}];updateSearchResults();
