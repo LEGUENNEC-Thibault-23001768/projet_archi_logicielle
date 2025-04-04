@@ -90,6 +90,34 @@ public class PanierService {
 
 
 
+    /**
+     * Supprime un panier spécifique par son ID.
+     * Cette opération est transactionnelle.
+     * @param id L'ID du panier à supprimer.
+     * @return true si la suppression a réussi, false si le panier n'existait pas.
+     */
+    public boolean deletePanierById(Integer id) {
+        if (id == null) {
+            return false;
+        }
+        return panierRepository.deleteById(id);
+    }
+
+    /**
+     * Met à jour un panier spécifique par son ID.
+     * Remplace les produits existants par ceux fournis dans panierDetails.
+     * L'userId dans panierDetails est ignoré.
+     * Cette opération est transactionnelle.
+     * @param id L'ID du panier à mettre à jour.
+     * @param panierDetails Contient les nouveaux produits du panier.
+     * @return Le panier mis à jour, ou null si le panier n'existe pas.
+     */
+    public Panier updatePanierById(Integer id, Panier panierDetails) {
+        if (id == null || panierDetails == null) {
+            return null;
+        }
+        return panierRepository.updateById(id, panierDetails);
+    }
 
 
     /**

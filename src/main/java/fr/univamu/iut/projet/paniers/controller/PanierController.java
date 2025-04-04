@@ -46,23 +46,12 @@ public class PanierController {
         return jwtUtil.getUserIdFromToken(token);
     }
 
-    private boolean checkUserRole(HttpHeaders httpHeaders, String requiredRole) {
-        List<String> authHeaders = httpHeaders.getRequestHeader(HttpHeaders.AUTHORIZATION);
-        if (authHeaders == null || authHeaders.isEmpty() || !authHeaders.get(0).startsWith("Bearer ")) {
-            return false;
-        }
-        String token = authHeaders.get(0).substring(7);
-        Optional<List<String>> rolesOpt = jwtUtil.getRolesFromToken(token);
-        return rolesOpt.map(roles -> roles.contains(requiredRole)).orElse(false);
-    }
-
 
     /**
      * Récupère tous les paniers.
      * @return Response contenant une liste de tous les paniers.
      */
     @GET
-    @RolesAllowed({"admin"})
     public Response getAllPaniers() {
         List<Panier> paniers = panierService.getAllPaniers();
         return Response.ok(paniers).build();
@@ -129,5 +118,38 @@ public class PanierController {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erreur lors du vidage du panier.").build();
         }
         return Response.ok(panier).build();
+    }
+
+    /**
+     * Met à jour un panier spécifique par son ID.
+     * Ne nécessite pas d'authentification.
+     * @param id L'ID du panier à mettre à jour.
+     * @param panierDetails Les nouveaux détails du panier.
+     * @return Response contenant le panier mis à jour ou une erreur 404.
+     */
+    @PUT
+    @Path("/{id}")
+    public Response updatePanierById(@PathParam("id") Integer id, Panier panierDetails) {
+        Panier updatedPanier = panierService.updatePanierById(id, panierDetails);
+        if (updatedPanier == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Panier avec ID " + id + " non trouvé.").build();
+        }
+        return Response.ok(updatedPanier).build();
+    }
+
+    /**
+     * Supprime un panier spécifique par son ID.
+     * Ne nécessite pas d'authentification.
+     * @param id L'ID du panier à supprimer.
+     * @return Response indiquant le succès (204) ou une erreur (404).
+     */
+    @DELETE
+    @Path("/{id}")
+    public Response deletePanierById(@PathParam("id") Integer id) {
+        boolean deleted = panierService.deletePanierById(id);
+        if (!deleted) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Panier avec ID " + id + " non trouvé.").build();
+        }
+        return Response.noContent().build(); // 204 No Content pour une suppression réussie
     }
 }

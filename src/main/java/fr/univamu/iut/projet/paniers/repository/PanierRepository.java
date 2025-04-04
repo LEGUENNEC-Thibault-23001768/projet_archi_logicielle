@@ -87,7 +87,7 @@ public class PanierRepository implements Closeable {
                 panier = mapResultSetToPanier(rs);
                 panier.setPanierProduits(findPanierProduitsByPanierId(panier.getPanierId()));
             }
-            dbConnection.commit(); // Commit after read (optional but good practice with setAutoCommit(false))
+            dbConnection.commit();
         } catch (SQLException e) {
             try { dbConnection.rollback(); } catch (SQLException ex) { System.err.println("Rollback failed: " + ex.getMessage()); }
             throw new RuntimeException("Error finding Panier by userId: " + userId, e);
@@ -154,7 +154,7 @@ public class PanierRepository implements Closeable {
             while (rs.next()) {
                 panierProduits.add(mapResultSetToPanierProduit(rs));
             }
-        } // Ne pas commit/rollback ici, fait par l'appelant
+        }
         return panierProduits;
     }
     /**
@@ -186,7 +186,7 @@ public class PanierRepository implements Closeable {
             }
             throw new RuntimeException("Error inserting Panier for user " + userId, e);
         }
-        return newPanier; // Peut être null si findByIdAndUserId échoue après création
+        return newPanier;
     }
 
 
@@ -223,7 +223,6 @@ public class PanierRepository implements Closeable {
     private void updatePanierProducts(Integer panierId, List<PanierProduit> products) throws SQLException {
         deletePanierProductsForPanierId(panierId);
 
-        // Insérer les nouveaux produits
         if (products != null && !products.isEmpty()) {
             String insertQuery = "INSERT INTO panier_produits (panier_id, produit_id, quantite, unite) VALUES (?, ?, ?, ?)";
             try (PreparedStatement psInsert = dbConnection.prepareStatement(insertQuery)) {
@@ -274,5 +273,92 @@ public class PanierRepository implements Closeable {
             try { dbConnection.rollback(); } catch (SQLException ex) { System.err.println("Rollback failed: " + ex.getMessage()); }
             throw new RuntimeException("Error deleting Panier by id=" + id + " and userId=" + userId, e);
         }
+    }
+
+    /**
+     * Met à jour un panier existant dans la base de données, identifié par son ID.
+     * Gère la transaction. Met à jour la date_maj et remplace les produits.
+     * @param id L'ID du panier à mettre à jour.
+     * @param panierDetails Les détails (produits) à mettre à jour. L'userId et panierId dans panierDetails sont ignorés.
+     * @return Le Panier mis à jour, ou null si le panier n'existe pas.
+     */
+    public Panier updateById(Integer id, Panier panierDetails) {
+        String updatePanierQuery = "UPDATE paniers SET date_maj = NOW() WHERE id = ?";
+        Panier updatedPanier = null;
+        try {
+            try (PreparedStatement psUpdate = dbConnection.prepareStatement(updatePanierQuery)) {
+                psUpdate.setInt(1, id);
+                int affectedRows = psUpdate.executeUpdate();
+                if (affectedRows == 0) {
+                    dbConnection.rollback();
+                    return null;
+                }
+            }
+
+            updatePanierProducts(id, panierDetails.getPanierProduits()); // Utilise delete et insert en interne
+
+            dbConnection.commit();
+
+            updatedPanier = findById(id);
+
+        } catch (SQLException e) {
+            try { dbConnection.rollback(); } catch (SQLException ex) { System.err.println("Rollback failed: " + ex.getMessage()); }
+            throw new RuntimeException("Error updating Panier id=" + id, e);
+        }
+        return updatedPanier;
+    }
+
+
+    /**
+     * Supprime un panier par son ID. Gère la transaction.
+     * Supprime d'abord les produits associés, puis le panier lui-même.
+     * @param id L'ID du panier à supprimer.
+     * @return true si la suppression a réussi, false si le panier n'existait pas.
+     */
+    public boolean deleteById(Integer id) {
+        String deletePanierQuery = "DELETE FROM paniers WHERE id=?";
+        boolean deleted = false;
+        try {
+            deletePanierProductsForPanierId(id);
+
+            try (PreparedStatement ps = dbConnection.prepareStatement(deletePanierQuery)) {
+                ps.setInt(1, id);
+                int affectedRows = ps.executeUpdate();
+                if (affectedRows > 0) {
+                    deleted = true;
+                }
+            }
+
+            if (deleted) {
+                dbConnection.commit();
+            } else {
+                dbConnection.rollback();
+            }
+            return deleted;
+        } catch (SQLException e) {
+            try { dbConnection.rollback(); } catch (SQLException ex) { System.err.println("Rollback failed: " + ex.getMessage()); }
+            throw new RuntimeException("Error deleting Panier by id=" + id, e);
+        }
+    }
+
+    /**
+     * Recherche un panier par son ID uniquement.
+     * @param id L'ID du panier.
+     * @return Le Panier trouvé ou null.
+     */
+    public Panier findById(Integer id) {
+        String query = "SELECT * FROM paniers WHERE id=?";
+        Panier panier = null;
+        try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                panier = mapResultSetToPanier(rs);
+                panier.setPanierProduits(findPanierProduitsByPanierId(panier.getPanierId()));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding Panier by id=" + id, e);
+        }
+        return panier;
     }
 }
