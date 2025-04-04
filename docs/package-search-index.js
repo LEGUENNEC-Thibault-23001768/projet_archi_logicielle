@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"fr.univamu.iut.projet.paniers"},{"l":"fr.univamu.iut.projet.paniers.controller"},{"l":"fr.univamu.iut.projet.paniers.entity"},{"l":"fr.univamu.iut.projet.paniers.repository"},{"l":"fr.univamu.iut.projet.paniers.service"},{"l":"fr.univamu.iut.projet.paniers.util"}];updateSearchResults();

@@ -1,0 +1,6 @@
+fr.univamu.iut.projet.paniers
+fr.univamu.iut.projet.paniers.controller
+fr.univamu.iut.projet.paniers.entity
+fr.univamu.iut.projet.paniers.repository
+fr.univamu.iut.projet.paniers.service
+fr.univamu.iut.projet.paniers.util
